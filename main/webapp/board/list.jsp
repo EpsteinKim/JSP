@@ -64,10 +64,14 @@ int count = 0;
 				pstmt.setString(1,idx);
 				ResultSet re_rs = pstmt.executeQuery();
 
+
 				if(re_rs.next()){
+					int reply_total = re_rs.getInt("reply_total");
+					if(reply_total > 0){
 %>
-					<span>[<%=re_rs.getString("reply_total") %>]</span>
+					<span>[<%=reply_total %>]</span>
 <%
+					}
 				}
 %>
 			
