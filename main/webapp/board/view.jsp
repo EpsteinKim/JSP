@@ -5,16 +5,6 @@
 <%@ page import="com.koreait.*"%>
 <%
 
-if(session.getAttribute("userid") == null){
-%>
-	<script>
-		alert('로그인후 이용하세요');
-		location.href='../login.jsp';
-	</script>
-<%
-	return;
-}
-
 String idx = request.getParameter("idx");
 
 Connection conn = null;
@@ -65,7 +55,7 @@ if (conn != null) {
 
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-					likeHTML.innerText = xhr.responseText.trim();
+					likeHTML.innerHTML = xhr.responseText;
 				}
 			};
 		})
@@ -100,7 +90,7 @@ if (conn != null) {
 			<td><%=content%></td>
 		</tr>
 		<tr>
-			<td colspan="2"><input type="button" value="수정"> <input
+			<td colspan="2"><input type="button" value="수정" onclick="location.href='./edit.jsp?idx=<%=idx%>'"> <input
 				type="button" value="삭제"> <input type="button" value="좋아요">
 				<input type="button" value="리스트"
 				onclick="location.href='./list.jsp'"></td>

@@ -4,6 +4,16 @@
 <%@page import="com.koreait.*"%>
 
 <%
+
+if(session.getAttribute("userid") == null){
+%>
+<script>
+alert('로그인 후 이용하세요');
+location.href='../login.jsp';
+</script>
+<%
+return;
+}
 	String idx = request.getParameter("idx");
 	Connection conn = Dbconn.getConnection();
 	ResultSet rs = null;
