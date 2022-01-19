@@ -90,12 +90,73 @@ if (conn != null) {
 			<td><%=content%></td>
 		</tr>
 		<tr>
-			<td colspan="2"><input type="button" value="수정" onclick="location.href='./edit.jsp?idx=<%=idx%>'"> <input
-				type="button" value="삭제"> <input type="button" value="좋아요">
+			<td colspan="2">
+			<%
+			if(userid.equals((String)session.getAttribute("userid"))){
+				%>
+		<input type="button" value="수정" onclick="location.href='./edit.jsp?idx=<%=idx%>'"> 
+		<input type="button" value="삭제" onclick="location.href='./delete.jsp?idx=<%=idx%>'"> 
+				<%			
+			}
+			
+			
+			%>
+				
+				<input type="button" value="좋아요">
 				<input type="button" value="리스트"
-				onclick="location.href='./list.jsp'"></td>
+				onclick="location.href='./list.jsp?idx=<%=idx%>'"></td>
 		</tr>
-
 	</table>
+	
+<hr/>
+	<form method="post" action="reply_ok.jsp">
+		<input type="hidden" name="idx" value="<%=idx%>">
+		<p><%=session.getAttribute("userid")%> :
+		<input type="text" size="40" name="r_content">
+		<input type="submit" value="확인"></p>
+	</form>
+	<hr/>
+	<%
+		sql = "select * from tb_reply where r_board_idx = ? order by r_idx desc";
+		pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1,idx);
+		rs = pstmt.executeQuery();
+		
+		String r_userid ="";
+		String r_content = "";
+		String r_regdate ="";
+		while(rs.next()){
+			int r_idx = rs.getInt("r_idx");
+			r_userid = rs.getString("r_userid");
+			r_content = rs.getString("r_content");
+			r_regdate = rs.getString("r_regdate");
+			%>
+			<p><%=r_userid %> : <%=r_content %> (<%=r_regdate %>)
+			<%
+				if(r_userid.equals((String)session.getAttribute("userid"))){
+					%>
+					<input type="button" value="삭제" onclick="location.href='./reply_delete.jsp?r_idx=<%=r_idx%>&idx=<%=idx%>'">
+					<%
+				}
+			%>
+			</p>
+			<%
+		}
+	%>
+	
+
+
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
