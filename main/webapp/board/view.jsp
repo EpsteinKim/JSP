@@ -4,6 +4,17 @@
 <%@ page import="java.sql.*"%>
 <%@ page import="com.koreait.*"%>
 <%
+
+if(session.getAttribute("userid") == null){
+%>
+	<script>
+		alert('로그인후 이용하세요');
+		location.href='../login.jsp';
+	</script>
+<%
+	return;
+}
+
 String idx = request.getParameter("idx");
 
 Connection conn = null;
@@ -11,11 +22,11 @@ PreparedStatement pstmt = null;
 ResultSet rs = null;
 String sql = null;
 
-String userid = null;
-String title = null;
-String content = null;
-String regdate = null;
-String date = null;
+String userid = "";
+String title = "";
+String content = "";
+String regdate = "";
+String date = "";
 int like = 0;
 int hit = 0;
 
@@ -53,7 +64,7 @@ if (conn != null) {
 			xhr.send();
 
 			xhr.onreadystatechange = function() {
-				if (XMLHttpRequest.DONE && xhr.status == 200) {
+				if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
 					likeHTML.innerText = xhr.responseText.trim();
 				}
 			};
