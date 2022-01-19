@@ -57,7 +57,21 @@ int count = 0;
 
 		<tr align=center>
 			<td><%=idx %></td>
-			<td style="text-align:left;"><a href="./title_click.jsp?idx=<%=idx %>"><%=title %></a></td>
+			<td style="text-align:left;"><a href="./title_click.jsp?idx=<%=idx %>"><%=title %></a> 
+<%
+				sql = "select count(r_board_idx) as reply_total from tb_reply where r_board_idx = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1,idx);
+				ResultSet re_rs = pstmt.executeQuery();
+
+				if(re_rs.next()){
+%>
+					<span>[<%=re_rs.getString("reply_total") %>]</span>
+<%
+				}
+%>
+			
+			</td>
 			<td><%=userid %></td>
 			<td><%=hit %></td>
 			<td><%=date %></td>
