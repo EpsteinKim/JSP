@@ -135,7 +135,7 @@ if (conn != null) {
 			<%
 				if(r_userid.equals((String)session.getAttribute("userid"))){
 					%>
-					<input type="button" value="삭제" onclick="location.href='./reply_delete.jsp?r_idx=<%=r_idx%>&idx=<%=idx%>'">
+					<input type="button" value="삭제" onclick="replyDel(<%=r_idx%>)">
 					<%
 				}
 			%>
@@ -144,7 +144,14 @@ if (conn != null) {
 		}
 	%>
 	
+<script>
+	function replyDel(r_idx){
+		if(confirm('게시물을 삭제하시겠습니까?')){
+			location.href='./reply_delete.jsp?r_idx='+ r_idx + '&' + 'idx=<%=idx%>';
+		}
 
+	}
+</script>
 
 </body>
 </html>
