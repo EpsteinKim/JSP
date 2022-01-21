@@ -2,13 +2,16 @@
     pageEncoding="UTF-8"%>
     
     <%
+    
+    	request.setCharacterEncoding("UTF-8");
+    
     	String userid = null;
     	String username = null;
-    	String idx = null;
+    	int idx = 0;
     	if(session.getAttribute("userid") != null){
     		userid = (String)session.getAttribute("userid");
     		username = (String)session.getAttribute("name");
-    		idx = (String)session.getAttribute("idx");
+    		idx = (int)session.getAttribute("idx");
     	}
     %>
 <!DOCTYPE html>
