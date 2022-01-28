@@ -1,31 +1,26 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="com.koreait.*"%>
-<%@page import="java.time.LocalDate" %>
-<%@page import="java.util.Date" %>
-<%@page import="java.text.SimpleDateFormat" %>
-<%
-int total = 0;
+<%@page import="java.time.LocalDate"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<jsp:useBean id="boardDTO" class="com.koreait.board.BoardDTO" />
+<jsp:useBean id="boardDAO" class="com.koreait.board.BoardDAO" />
 
-Integer cur_page = request.getParameter("cur_page") == null? cur_page = 0 :Integer.parseInt(request.getParameter("cur_page"));
+<c:set var="total" value="${boardDAO.listTotal() }" />
 
+<%-- <c:set var="cur_page" value='${pageContext.request.getParameter("cur_page") }' /> --%>
+<!-- request.getParameter를 사용하려면 pageContext로 request 객체를 불러와야 된다. -->
 
-String sql = "";
-PreparedStatement pstmt = null;
-ResultSet rs = null;
-Connection conn = Dbconn.getConnection();
+<c:set var="cur_page" value='${param.cur_page }'/>
+<!-- JSTL에서 param이라는 객체는 request.getParameter들의 값이 모여있는 곳 -->
 
-Date from = new Date();
-SimpleDateFormat fm = new SimpleDateFormat("yyyy-MM-dd");
-String to = fm.format(from);
+<c:if test='${empty cur_page || cur_page < 1}'>
+<c:set var="cur_page" value="1"/>
+</c:if>
+<!-- 도메인을 임의로 수정하는 경우 cur_page값 고정 -->
 
-int page_rep = 0;
-int page_rep_left = 0;
-int page_user_rep = 10;
+<c:set var="boardList" value="${boardDAO.selectBoard(cur_page)}" />
 
-
-
-%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,17 +29,7 @@ int page_user_rep = 10;
 </head>
 <body>
 	<h2>커뮤니티 - 리스트</h2>
-	<p>
-		게시글 :
-		<%
-	String sql_howmany = "select count(b_idx) as total from tb_board";
-	pstmt = conn.prepareStatement(sql_howmany);
-	rs = pstmt.executeQuery();
-
-	if (rs.next()) total = rs.getInt("total");	
-	out.print(total);
-	%>개
-	</p>
+	<p>게시글 : ${total }</p>
 
 	<table border="1" width="800">
 		<tr>
@@ -55,69 +40,39 @@ int page_user_rep = 10;
 			<th width="200">날짜</th>
 			<th width="75">좋아요</th>
 		</tr>
-		<%
-		
-		sql = "select * from tb_board order by b_idx desc limit ?,?";
-		pstmt = conn.prepareStatement(sql);
-		pstmt.setInt(1,cur_page*10);
-		pstmt.setInt(2,10);
-		rs = pstmt.executeQuery();
-		
-		// 반복여부 추가
-		page_rep = total / page_user_rep + 1;
-		
-		while (rs.next()) {
-			String[] regdate = rs.getString("b_regdate").split(" ");
-			String date = regdate[0];
-			String time = regdate[1];
-			
-			String idx = rs.getString("b_idx");
-			String title = rs.getString("b_title");
-			String userid = rs.getString("b_userid");
-			String hit = rs.getString("b_hit");
-			String like = rs.getString("b_like");
-			String reply_howmany = "";
-			String isNewHTML = "";
-			
-			sql = "select count(r_board_idx) as reply_total from tb_reply where r_board_idx = ?";
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1,idx);
-			ResultSet re_rs = pstmt.executeQuery();
-			
-			// 댓글 갯수 확인
-			if(re_rs.next()){
-				int reply_total = re_rs.getInt("reply_total");
-				if(reply_total > 0) reply_howmany = "<span>["+ reply_total+ "]</span>";
-			}
-			
-			// 시간 확인
-			LocalDate now = LocalDate.now();
-			if(date.equals(now.toString())) isNewHTML = "<img src='./img/New.png' style='width:20px; vertical-align:middle;'>";
-%>
 
-		<tr align=center>
-			<td><%=idx %></td>
-			<td style="text-align:left;"><a href="./title_click.jsp?idx=<%=idx %>"><%=title %></a> <%=reply_howmany %> <%=isNewHTML %> </td>
-			<td><%=userid %></td>
-			<td><%=hit %></td>
-			<td><%=date %></td>
-			<td><%=like %></td>
-		</tr>
-<%
-		}
-%>
-		
+		<c:set var='now' value="${LocalDate.now() }" />
+		<c:forEach var="item" items="${boardList}" varStatus="status">
+			<c:set var="replyNum" value="${boardDAO.reply_total(item.idx) }" />
+			<c:choose>
+				<c:when test='${replyNum eq 0 }'>
+					<c:remove var="replyNum" />
+				</c:when>
+				<c:otherwise>
+					<c:set var="replyNum" value="[${replyNum }]" />
+				</c:otherwise>
+			</c:choose>
+			<tr align=center>
+				<td>${item.idx}</td>
+				<td><a href='./view.jsp?idx=${item.idx}'>${item.title }</a>${replyNum }
+					<c:if test='${now eq item.regdate.split(" ")[0] }'>
+						<img style="width: 15px;"
+							src="https://img.icons8.com/ios-glyphs/344/new.png">
+					</c:if></td>
+				<td>${item.userid }</td>
+				<td>${item.hit }</td>
+				<td>${item.regdate.split(" ")[0] }</td>
+				<td>${item.like}</td>
+			</tr>
+		</c:forEach>
 		<tr>
-			<td colspan=5 style="text-align:center;">
-<%
-			for(int i = 1 ; i <= page_rep; i++){
-				String tempHTML = "<a href=./list.jsp?cur_page=" + (i-1) + ">" +" "+i+" " + "</a>";
-				out.print(tempHTML);
-			}
-%>
-			<td>
+			<td colspan=7 style="text-align: center;">
+			<c:forEach var="pageNum" items='${boardDAO.pagination(total) }'>
+			<span> <a href="./list.jsp?cur_page=${pageNum}">${pageNum}</a> </span>
+			</c:forEach>
+			</td>
 		</tr>
-		
+
 	</table>
 
 	<p>
